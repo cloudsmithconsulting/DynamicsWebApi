@@ -69,13 +69,14 @@ var dataStubs = {
         "option_x002e_value1": "value"
     },
     entityDefinitionList: {
-        '@odata.contxt': 'context',
+        '@odata.context': 'context',
+        oDataContext: 'context',
         value: [{
-            "LogicalCollectionName": "tests",
+            "EntitySetName": "tests",
             "LogicalName": "test",
             "MetadataId": "9dceed2b-9513-4a14-b09e-c176a6f1d9c3"
         }, {
-            "LogicalCollectionName": "records",
+            "EntitySetName": "records",
             "LogicalName": "record",
             "MetadataId": "18eb9672-3070-478c-be5b-e0324acb1188"
         }]
@@ -127,6 +128,14 @@ var dataStubs = {
     multipleWithLink: {
         "@odata.context": "context",
         "@odata.nextLink": webApiUrl + "tests?$select=name&$skiptoken=%3Ccookie%20pagenumber=%222%22%20pagingcookie=%22%253ccookie%2520page%253d%25221%2522%253e%253caccountid%2520last%253d%2522%257b8151925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520first%253d%2522%257b7D51925C-CDE2-E411-80DB-00155D2A68CB%257d%2522%2520%252f%253e%253c%252fcookie%253e%22%20/%3E",
+        value: [
+            { name: "name1", subject: "subject1" },
+            { name: "name2", subject: "subject2" }
+        ]
+    },
+    multipleWithDeltaLink: {
+        "@odata.context": "context",
+        "@odata.deltaLink": webApiUrl + "tests?$select=name&$deltatoken=919042%2108%2f22%2f2017%2008%3a10%3a44",
         value: [
             { name: "name1", subject: "subject1" },
             { name: "name2", subject: "subject2" }
@@ -203,6 +212,43 @@ var dataStubs = {
         '\n' +
         'GET ' + webApiUrl + 'morerecords HTTP/1.1\n' +
         'Accept: application/json\n' +
+        '\n' +
+        '--dwa_batch_XXX--',
+    batchUpsertUpsertUpsertWithAlternateKeys:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100001\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(key=\'key1\') HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100002\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(key=\'key2\') HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100003\n' +
+        '\n' +
+        'PATCH ' + webApiUrl + 'records(key=\'key3\') HTTP/1.1\n' +
+        'Content-Type: application/json\n' +
+        '\n' +
+        '{"firstname":"Test","lastname":"Batch!"}\n' +
+        '\n' +
+        '--changeset_XXX--\n' +
         '\n' +
         '--dwa_batch_XXX--',
     batchUpdateDelete:
@@ -360,6 +406,24 @@ var dataStubs = {
         'Accept: application/json\n' +
         '\n' +
         '--dwa_batch_XXX--',
+    batchErrorChangeSet:
+        '--dwa_batch_XXX\n' +
+        'Content-Type: multipart/mixed;boundary=changeset_XXX\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        'Content-Type: application/http\n' +
+        'Content-Transfer-Encoding: binary\n' +
+        'Content-ID: 100001\n' +
+        '\n' +
+        'HTTP/1.1 400 Bad Request\n' +
+        'REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\n' +
+        'Content-Type: application/json\n' +
+        'OData-Version: 4.0\n' +
+        '\n' +
+        '{"error":{"code":"0x0","message":"error"}}\n' +
+        '\n' +
+        '--changeset_XXX\n' +
+        '--dwa_batch_XXX--',
     fetchXmls: {
         cookiePage1: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25221%2522%253E%253Caccountid%2520last%253D%2522%257BEF72AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257B475B158C-541C-E511-80D3-3863BB347BA8%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
         cookiePage2: "%253Ccookie%2520pagenumber%253D%25222%2522%2520pagingcookie%253D%2522%253Ccookie%2520page%253D%25222%2522%253E%253Caccountid%2520last%253D%2522%257BF972AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520first%253D%2522%257BF172AE29-B3DE-E611-8102-5065F38A7BF1%257D%2522%2520/%253E%253C/cookie%253E%2522%2520istracking%253D%2522False%2522%2520/%253E",
@@ -397,7 +461,7 @@ var dataStubs = {
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResponsePage2Cookie: {
             "@odata.context": "context",
@@ -405,14 +469,14 @@ var dataStubs = {
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResponsePage2NoCookie: {
             "@odata.context": "context",
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResponsePage1: {
             "@odata.context": "context",
@@ -420,7 +484,7 @@ var dataStubs = {
             value: [
                 { name: "name1", subject: "subject1" },
                 { name: "name2", subject: "subject2" }
-            ],
+            ]
         },
         fetchXmlResultPage1Cookie: {
             "@odata.context": "context",
@@ -463,12 +527,14 @@ var dataStubs = {
                 page: 1,
                 nextPage: 2
             }
-        },
+        }
     }
 };
 
 var responseStubs = {
-    collectionUrl: webApiUrl + "tests",
+    webApiUrl: webApiUrl,
+    collectionUrl: "/tests",
+    collection: "tests",
     createReturnId: {
         status: 204,
         responseHeaders: {
@@ -485,13 +551,13 @@ var responseStubs = {
         status: 201,
         responseText: JSON.stringify(dataStubs.testEntity)
     },
-    testEntityUrl: webApiUrl + "tests(" + dataStubs.testEntityId + ")",
-    entityDefinitionsUrl: webApiUrl + 'EntityDefinitions',
-    entityDefinitionsIdUrl: webApiUrl + 'EntityDefinitions(' + dataStubs.testEntityId + ')',
-    relationshipDefinitionsUrl: webApiUrl + 'RelationshipDefinitions',
-    relationshipDefinitionsIdUrl: webApiUrl + 'RelationshipDefinitions(' + dataStubs.testEntityId + ')',
-    globalOptionSetDefinitionsUrl: webApiUrl + 'GlobalOptionSetDefinitions',
-    globalOptionSetDefinitionsIdUrl: webApiUrl + 'GlobalOptionSetDefinitions(' + dataStubs.testEntityId + ')',
+    testEntityUrl: "/tests(" + dataStubs.testEntityId + ")",
+    entityDefinitionsUrl: '/EntityDefinitions',
+    entityDefinitionsIdUrl: '/EntityDefinitions(' + dataStubs.testEntityId + ')',
+    relationshipDefinitionsUrl: '/RelationshipDefinitions',
+    relationshipDefinitionsIdUrl: '/RelationshipDefinitions(' + dataStubs.testEntityId + ')',
+    globalOptionSetDefinitionsUrl: '/GlobalOptionSetDefinitions',
+    globalOptionSetDefinitionsIdUrl: '/GlobalOptionSetDefinitions(' + dataStubs.testEntityId + ')',
     basicEmptyResponseSuccess: {
         status: 204
     },
@@ -542,6 +608,10 @@ var responseStubs = {
     multipleWithLinkResponse: {
         status: 200,
         responseText: JSON.stringify(dataStubs.multipleWithLink)
+    },
+    multipleWithDeltaLinkResponse: {
+        status: 200,
+        responseText: JSON.stringify(dataStubs.multipleWithDeltaLink)
     },
     batch: {
         status: 200,
@@ -634,6 +704,48 @@ var responseStubs = {
             JSON.stringify(dataStubs.multiple2) + '\r\n' +
             '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
     },
+    batchUpsertUpsertUpsertWithAlternateKeys: {
+        status: 200,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100001' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(key=\'key1\')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(key=\'key1\')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100002' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(key=\'key2\')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(key=\'key2\')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100003' +
+
+            'HTTP/1.1 204 No Content\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'Location: https://url.com/api/data/v8.2/tests(key=\'key3\')\r\n' +
+            'OData-EntityId: https://url.com/api/data/v8.2/tests(key=\'key3\')\r\n' +
+            '\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
     batchUpdateDelete: {
         status: 200,
         responseText:
@@ -661,6 +773,26 @@ var responseStubs = {
             '\r\n' +
             '\r\n' +
             '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd--\r\n' +
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
+    },
+    batchError: {
+        status: 400,
+        responseText:
+            '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae\r\n' +
+            'Content-Type: multipart/mixed; boundary=changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            '\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
+            'Content-Type: application/http\r\n' +
+            'Content-Transfer-Encoding: binary\r\n' +
+            'Content-ID: 100001' +
+
+            'HTTP/1.1 400 Bad Request\r\n' +
+            'OData-Version: 4.0\r\n' +
+            'REQ_ID: 5fe339e5-c75e-4dad-9597-b257ebce666b\r\n' +
+            'OData-Version: 4.0\r\n' +
+            '\r\n' +
+            '{"error":{"code":"0x0","message":"error","innererror":{"message":"error","type":"Microsoft.Crm.CrmHttpException","stacktrace":"stack"}}}\r\n' +
+            '--changesetresponse_08f5ebfd-5cee-4b64-bc51-ee16c02d47bd\r\n' +
             '--batchresponse_8b19b76e-c553-4c4c-af9d-b5521bfda1ae--'
     },
     //batchCreateContentID: {
@@ -861,6 +993,12 @@ var responseStubs = {
         stub.oDataNextLink = stub["@odata.nextLink"];
         return stub;
     },
+    multipleWithDeltaLink: function () {
+        var stub = dataStubs.multipleWithDeltaLink;
+        stub.oDataContext = stub["@odata.context"];
+        stub.oDataDeltaLink = stub["@odata.deltaLink"];
+        return stub;
+    },
     multiple: function () {
         var stub = dataStubs.multiple;
         stub.oDataContext = stub["@odata.context"];
@@ -891,5 +1029,5 @@ module.exports = {
     responses: responseStubs,
     webApiUrl: webApiUrl,
     webApiUrl81: webApiUrl81,
-    webApiUrl80: webApiUrl80,
+    webApiUrl80: webApiUrl80
 }

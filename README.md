@@ -1,10 +1,10 @@
-# DynamicsWebApi for Microsoft Dynamics CRM Web API
+# DynamicsWebApi for Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API
 
 [![Travis](https://img.shields.io/travis/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://travis-ci.org/AleksandrRogov/DynamicsWebApi)
 [![Coveralls](https://img.shields.io/coveralls/AleksandrRogov/DynamicsWebApi.svg?style=flat-square)](https://coveralls.io/github/AleksandrRogov/DynamicsWebApi)
 
-DynamicsWebApi is a Microsoft Dynamics CRM Web API helper library written in JavaScript.
-It is compatible with: Dynamics 365 (online), Dynamics 365 (on-premises), Dynamics CRM 2016, Dynamics CRM Online.
+DynamicsWebApi is a Microsoft Dynamics 365 CE (CRM) / Common Data Service Web API helper library written in JavaScript.
+It is compatible with: Common Data Service, Dynamics 365 CE (online), Dynamics 365 CE (on-premises), Dynamics CRM 2016, Dynamics CRM Online
 
 Please check [DynamicsWebApi Wiki](../../wiki/) where you will find documentation to DynamicsWebApi API and more.
 
@@ -18,6 +18,8 @@ Please check [suggestions and contributions](#contributions) section to learn mo
 even though [it should have done it by default](https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package), therefore
 `npm update dynamics-web-api` was not working properly. If you see an error during an update of the package, 
 please go to `node_modules\dynamics-web-api` of your application and remove `.git` directory manually. This error has been fixed in `v.1.4.7`.
+
+Please note, that "Dynamics 365" in this readme refers to Microsoft Dynamics 365 Customer Engagement / Common Data Service.
 
 ## Table of Contents
 
@@ -35,6 +37,7 @@ please go to `node_modules\dynamics-web-api` of your application and remove `.gi
     * [Delete a single property value](#delete-a-single-property-value)
   * [Retrieve a record](#retrieve-a-record)
   * [Retrieve multiple records](#retrieve-multiple-records)
+    * [Change Tracking](#change-tracking)
     * [Retrieve All records](#retrieve-all-records)
   * [Count](#count)
     * [Count limitation workaround](#count-limitation-workaround)
@@ -255,6 +258,7 @@ savedQuery | String | `retrieveRequest` | A String representing the GUID value o
 select | Array | `retrieveRequest`, `retrieveMultipleRequest`, `retrieveAllRequest`, `updateRequest`, `upsertRequest` | An Array (of Strings) representing the $select OData System Query Option to control which attributes will be returned.
 token | String | All | Authorization Token. If set, onTokenRefresh will not be called.
 top | Number | `retrieveMultipleRequest`, `retrieveAllRequest` | Limit the number of results returned by using the $top system query option. Do not use $top with $count!
+trackChanges | Boolean | `retrieveMultipleRequest`, `retrieveAllRequest` | `v.1.5.11+` Sets Prefer header with value 'odata.track-changes' to request that a delta link be returned which can subsequently be used to retrieve entity changes. __Important!__ Change Tracking must be enabled for the entity. [More Info](https://docs.microsoft.com/en-us/powerapps/developer/common-data-service/use-change-tracking-synchronize-data-external-systems#enable-change-tracking-for-an-entity)
 userQuery | String | `retrieveRequest` | A String representing the GUID value of the user query.
 
 Basic and Advanced functions also have differences in `expand` parameters. For Basic ones this parameter is a type of String 
@@ -644,7 +648,6 @@ var request = {
 
 //perform a multiple records retrieve operation
 dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
-    /// <param name="response" type="DWA.Types.MultipleResponse">Response object</param>
 
     var count = response.oDataCount;
     var nextLink = response.oDataNextLink;
@@ -653,6 +656,34 @@ dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
 })
 .catch(function (error){
     //catch an error
+});
+```
+
+#### Change Tracking
+
+```js
+//set the request parameters
+var request = {
+    collection: "leads",
+    select: ["fullname", "subject"],
+    trackChanges: true
+};
+
+//perform a multiple records retrieve operation (1)
+dynamicsWebApi.retrieveMultipleRequest(request).then(function (response) {
+
+    var deltaLink = response.oDataDeltaLink;
+    //make other requests to Web API
+    //...
+
+    //(2) only retrieve changes:
+    return dynamicsWebApi.retrieveMultipleRequest(request, response.oDataDeltaLink);
+})
+.then(function (response) {
+   //here you will get changes between the first retrieveMultipleRequest (1) and the second one (2)
+})
+.catch(function (error){
+   //catch an error
 });
 ```
 
@@ -1985,6 +2016,7 @@ the config option "formatted" will enable developers to retrieve all information
 - [X] Batch requests. `Implemented in v.1.5.0`
 - [X] TypeScript declaration files `d.ts` `Added in v.1.5.3`.
 - [X] Implement `Content-ID` header to reference a request in a Change Set in a batch operation `Added in v.1.5.6`.
+- [X] Change Tracking `Added in v.1.5.11`.
 - [ ] Upload DynamicsWebApi declaration files to DefinitelyTyped repository.
 
 Many more features to come!
@@ -2001,7 +2033,7 @@ Please use the following library that implements Callbacks : [DynamicsWebApi wit
 
 ## Contributions
 
-First of all, I would like to thank you for using `DynamicsWebApi` library in your Dynamics 365 CE project, the fact that my project helps someone to achieve their development goals already makes me happy. 
+First of all, I would like to thank you for using `DynamicsWebApi` library in your Dynamics 365 CE / Common Data Service project, the fact that my project helps someone to achieve their development goals already makes me happy. 
 
 And if you would like to contribute to the project you may do it in multiple ways:
 1. Submit an issue/bug if you have encountered one.
